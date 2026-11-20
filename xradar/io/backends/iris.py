@@ -4069,7 +4069,20 @@ class IrisArrayWrapper(BackendArray):
             )
         self.name = name
         # get rays and bins
-        nrays = var["number_rays_file_written"]
+        # We use `get_moment`, which drops masked/missing rays (those with rbins == 0)
+        # and can be smaller than the header's `number_rays_file_written` (e.g. when a fan angle/sector is masked).
+        # This is needed so the declared nrays matches the loaded data
+        # and xarray does not raise "conflicting sizes for dimension" errors.
+        with datastore.lock:
+            cache = getattr(datastore.root, "_sweep_nrays", {})
+            if self.group not in cache:
+                datastore.root.get_moment(self.group, "azimuth")
+                cache[self.group] = len(
+                    datastore.root.data[self.group]["sweep_data"]["azimuth"]
+                )
+                datastore.root._sweep_nrays = cache
+            nrays = cache[self.group]
+        
         nbins = datastore.root.product_hdr["product_end"]["number_bins"]
         # todo: retrieve datatype from io.iris.SIGMET_DATA_TYPES
         # hint: source data for RAW files is int16
