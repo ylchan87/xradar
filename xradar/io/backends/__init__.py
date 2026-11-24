@@ -16,6 +16,7 @@ Xarray Backends
 .. automodule:: xradar.io.backends.furuno
 .. automodule:: xradar.io.backends.rainbow
 .. automodule:: xradar.io.backends.iris
+.. automodule:: xradar.io.backends.iris_mod
 .. automodule:: xradar.io.backends.hpl
 .. automodule:: xradar.io.backends.nexrad_level2
 .. automodule:: xradar.io.backends.datamet
@@ -31,6 +32,7 @@ from .cfradial2 import *  # noqa
 from .furuno import *  # noqa
 from .gamic import *  # noqa
 from .iris import *  # noqa
+from .iris_mod import *  # noqa
 from .odim import *  # noqa
 from .rainbow import *  # noqa
 from .hpl import *  # noqa

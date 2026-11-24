@@ -29,6 +29,7 @@ from .backends.gamic import GamicBackendEntrypoint
 from .backends.hpl import HPLBackendEntrypoint
 from .backends.imd import IMDBackendEntrypoint, open_imd_datatree
 from .backends.iris import IrisBackendEntrypoint
+from .backends.iris_mod import IrisModBackendEntrypoint
 from .backends.metek import MRRBackendEntrypoint
 from .backends.nexrad_level2 import NexradLevel2BackendEntrypoint
 from .backends.odim import OdimBackendEntrypoint
@@ -44,6 +45,7 @@ _ENGINE_REGISTRY = {
     "nexradlevel2": NexradLevel2BackendEntrypoint,
     "gamic": GamicBackendEntrypoint,
     "iris": IrisBackendEntrypoint,
+    "iris_mod": IrisModBackendEntrypoint,
     "furuno": FurunoBackendEntrypoint,
     "rainbow": RainbowBackendEntrypoint,
     "datamet": DataMetBackendEntrypoint,

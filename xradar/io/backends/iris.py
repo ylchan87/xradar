@@ -4174,6 +4174,9 @@ class IrisStore(_ManagedStoreMixin, AbstractDataStore):
     Ported from wradlib.
     """
 
+    #: Class used to read the file, replaceable in subclasses (see ``iris_mod``).
+    raw_file_class = IrisRawFile
+
     def __init__(self, manager, group=None, lock=IRIS_LOCK):
         self._manager = manager
         self._group = int(group[6:]) + 1
@@ -4185,7 +4188,9 @@ class IrisStore(_ManagedStoreMixin, AbstractDataStore):
     def open(cls, filename, mode="r", group=None, lock=None, **kwargs):
         if lock is None:
             lock = IRIS_LOCK
-        manager = CachingFileManager(IrisRawFile, filename, mode=mode, kwargs=kwargs)
+        manager = CachingFileManager(
+            cls.raw_file_class, filename, mode=mode, kwargs=kwargs
+        )
         return cls(manager, group=group, lock=lock)
 
     @property
@@ -4366,8 +4371,10 @@ class IrisStore(_ManagedStoreMixin, AbstractDataStore):
         )
 
 
-def _get_iris_group_names(filename):
+def _get_iris_group_names(filename, raw_file_class=None):
     sid, opener = _check_iris_file(filename)
+    if raw_file_class is not None and opener is IrisRawFile:
+        opener = raw_file_class
     with opener(filename, loaddata=False) as ds:
         # make this CfRadial2 conform
         keys = [f"sweep_{i - 1}" for i in list(ds.data.keys())]
@@ -4380,6 +4387,10 @@ class IrisBackendEntrypoint(BackendEntrypoint):
     description = "Open IRIS/Sigmet files in Xarray"
     url = "https://xradar.rtfd.io/latest/io.html#iris-sigmet-data-i-o"
     supports_groups = True
+
+    #: Store class and engine name, replaceable in subclasses (see ``iris_mod``).
+    store_class = IrisStore
+    engine_name = "iris"
 
     def guess_can_open(self, filename_or_obj):
         """IRIS/Sigmet RAW file (``product_hdr`` structure, RAW product)."""
@@ -4417,7 +4428,7 @@ class IrisBackendEntrypoint(BackendEntrypoint):
         site_as_coords=True,
         optional=True,
     ):
-        store = IrisStore.open(
+        store = self.store_class.open(
             filename_or_obj,
             group=group,
             lock=lock,
@@ -4445,7 +4456,7 @@ class IrisBackendEntrypoint(BackendEntrypoint):
         # drop DB_XHDR for now
         ds = ds.drop_vars("DB_XHDR", errors="ignore")
 
-        ds.encoding["engine"] = "iris"
+        ds.encoding["engine"] = self.engine_name
 
         # handle duplicates and reindex
         reindex_coord = _get_reindex_coord(reindex_coord, reindex_angle)
@@ -4496,7 +4507,12 @@ class IrisBackendEntrypoint(BackendEntrypoint):
         optional=True,
         optional_groups=False,
     ):
-        sweeps = _resolve_sweeps(sweep, lambda: _get_iris_group_names(filename_or_obj))
+        sweeps = _resolve_sweeps(
+            sweep,
+            lambda: _get_iris_group_names(
+                filename_or_obj, self.store_class.raw_file_class
+            ),
+        )
 
         ds_kwargs = dict(
             mask_and_scale=mask_and_scale,
