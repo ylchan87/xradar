@@ -717,7 +717,9 @@ class RainbowStore(_ManagedStoreMixin, AbstractDataStore):
         start_idx = ray.index(start)
         stop = next(filter(lambda x: x["@refid"] == "stopangle", ray), False)
 
-        anglestep = self.root._get_rbdict_value(var, "anglestep", dtype=float)
+        #anglestep = self.root._get_rbdict_value(var, "anglestep", dtype=float)
+        anglestep = 1.0  # FIXME, quickk hack, need to revert 
+
         antdirection = self.root._get_rbdict_value(
             var, "antdirection", default=0, dtype=bool
         )
@@ -787,7 +789,9 @@ class RainbowStore(_ManagedStoreMixin, AbstractDataStore):
         range_attrs = get_range_attrs(rng)
 
         # making-up ray times
-        antspeed = self.root._get_rbdict_value(var, "antspeed", dtype=float)
+        # antspeed = self.root._get_rbdict_value(var, "antspeed", dtype=float)
+        antspeed = 1.0 # FIXME, quickk hack, need to revert
+
         raytime = anglestep / antspeed
         raytimes = np.array(
             [

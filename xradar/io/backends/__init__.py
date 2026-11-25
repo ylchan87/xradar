@@ -33,6 +33,7 @@ from .furuno import *  # noqa
 from .gamic import *  # noqa
 from .iris import *  # noqa
 from .iris_mod import *  # noqa
+from .iris_opt import *  # noqa
 from .odim import *  # noqa
 from .rainbow import *  # noqa
 from .hpl import *  # noqa
